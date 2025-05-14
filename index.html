@@ -13,19 +13,16 @@
 
         <form id="formPague">
           <input type="text" id="nick" placeholder="Nick do jogador" required />
-
           <select id="tipoPagamento">
             <option value="moeda">Moeda</option>
             <option value="mobi">Mobi</option>
           </select>
-
           <input
             type="text"
             id="nomeItem"
             placeholder="Nome do mobi"
             style="display: none"
           />
-
           <input
             type="number"
             id="valor"
@@ -38,15 +35,18 @@
         <table id="tabelaJogadores">
           <thead>
             <tr>
-              <th>Nick</th>
-              <th>Item</th>
-              <th>Pague</th>
-              <th>10%</th>
+              <th>Jogador</th>
+              <th>Itens</th>
+              <th>Valores</th>
+              <th>Valor Total</th>
+              <!-- NOVO -->
+              <th>Taxa (10%)</th>
               <th>Total</th>
               <th>Status</th>
-              <th>Ação</th>
+              <th>Ações</th>
             </tr>
           </thead>
+
           <tbody></tbody>
         </table>
 
@@ -61,6 +61,7 @@
             <span id="valorEntrada">0.00</span>c
           </p>
         </div>
+
         <div class="botoes-final">
           <button id="btnDownload">Download PDF</button>
           <button id="btnLimpar">Limpar Tudo</button>
@@ -84,7 +85,6 @@
           />
           <button type="submit">Adicionar Raro</button>
         </form>
-
         <table id="tabelaRaros">
           <thead>
             <tr>
