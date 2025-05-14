@@ -183,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const shareOperador = Math.floor(totalGeral * 0.3);
     const poolLiquido = totalGeral - shareOperador;
-    const valorEntrada = Math.floor(totalPague * 2);
+    const valorEntrada = Math.floor(totalTaxa * 2);
 
     totalPagueEl.textContent = totalPague;
     totalTaxaEl.textContent = totalTaxa;
