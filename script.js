@@ -1,5 +1,7 @@
 const form = document.getElementById("formPague");
 const nickIn = document.getElementById("nick");
+const tipoPagamento = document.getElementById("tipoPagamento");
+const nomeItemIn = document.getElementById("nomeItem");
 const valorIn = document.getElementById("valor");
 const tbody = document.querySelector("#tabelaJogadores tbody");
 const totalPagueEl = document.getElementById("totalPague");
@@ -7,6 +9,7 @@ const totalTaxaEl = document.getElementById("totalTaxa");
 const totalGeralEl = document.getElementById("totalGeral");
 const shareOpEl = document.getElementById("shareOperador");
 const poolLiqEl = document.getElementById("poolLiquido");
+
 const btnDownload = document.getElementById("btnDownload");
 const btnLimpar = document.getElementById("btnLimpar");
 
@@ -17,6 +20,11 @@ const tbodyRaros = document.querySelector("#tabelaRaros tbody");
 
 let jogadores = [];
 let raros = [];
+
+tipoPagamento.addEventListener("change", () => {
+  nomeItemIn.style.display =
+    tipoPagamento.value === "mobi" ? "inline-block" : "none";
+});
 
 function carregar() {
   const j = localStorage.getItem("jogadores");
@@ -39,18 +47,24 @@ function salvarRaros() {
 form.addEventListener("submit", (e) => {
   e.preventDefault();
   const nick = nickIn.value.trim();
-  const valor = parseFloat(valorIn.value);
+  const tipo = tipoPagamento.value;
+  const nomeItem = tipo === "mobi" ? nomeItemIn.value.trim() : "Moeda";
+  const valor = parseInt(valorIn.value);
+
   if (!nick || isNaN(valor) || valor < 0) return;
+  if (tipo === "mobi" && !nomeItem) return;
+
   const idx = jogadores.findIndex((j) => j.nick === nick);
   if (idx > -1) {
     jogadores[idx].pague += valor;
   } else {
-    jogadores.push({ nick, pague: valor, status: "ativo" });
+    jogadores.push({ nick, item: nomeItem, pague: valor, status: "ativo" });
   }
   salvar();
   atualizarUI();
   atualizarSelectNicks();
   form.reset();
+  nomeItemIn.style.display = "none";
 });
 
 function atualizarUI() {
@@ -59,7 +73,7 @@ function atualizarUI() {
     somaTaxa = 0;
 
   jogadores.forEach((j, i) => {
-    const taxa = j.pague * 0.1;
+    const taxa = Math.round(j.pague * 0.1);
     const total = j.pague + taxa;
     somaPague += j.pague;
     somaTaxa += taxa;
@@ -67,9 +81,10 @@ function atualizarUI() {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${j.nick}</td>
-      <td>${j.pague.toFixed(2)}</td>
-      <td>${taxa.toFixed(2)}</td>
-      <td>${total.toFixed(2)}</td>
+      <td>${j.item || "Moeda"}</td>
+      <td>${j.pague}</td>
+      <td>${taxa}</td>
+      <td>${total}</td>
       <td>${j.status}</td>
       <td>
         <button class="edit" data-index="${i}">Editar</button>
@@ -79,18 +94,33 @@ function atualizarUI() {
     tbody.appendChild(tr);
   });
 
-  totalPagueEl.textContent = somaPague.toFixed(2);
-  totalTaxaEl.textContent = somaTaxa.toFixed(2);
-  totalGeralEl.textContent = (somaPague + somaTaxa).toFixed(2);
-  shareOpEl.textContent = ((somaPague + somaTaxa) * 0.3).toFixed(2);
-  poolLiqEl.textContent = ((somaPague + somaTaxa) * 0.7).toFixed(2);
+  const somaGeral = somaPague + somaTaxa;
+  const shareOperador = Math.round(somaGeral * 0.3);
+  const poolLiquido = somaGeral - shareOperador;
+  const valorEntrada = somaPague * 2;
+
+  totalPagueEl.textContent = somaPague;
+  totalTaxaEl.textContent = somaTaxa;
+  totalGeralEl.textContent = somaGeral;
+  shareOpEl.textContent = shareOperador;
+  poolLiqEl.textContent = poolLiquido;
 
   document.querySelectorAll("button.edit").forEach((btn) => {
     btn.onclick = () => {
       const i = +btn.dataset.index;
-      const extra = parseFloat(prompt("Adicionar quanto a mais?", "0"));
+      const tipo = prompt("Tipo de pagamento (moeda/mobi):", "moeda");
+      if (!tipo || (tipo !== "moeda" && tipo !== "mobi")) return;
+
+      let nomeItem = "Moeda";
+      if (tipo === "mobi") {
+        nomeItem = prompt("Nome do mobi:");
+        if (!nomeItem) return;
+      }
+
+      const extra = parseInt(prompt("Adicionar quanto a mais?", "0"));
       if (!isNaN(extra) && extra >= 0) {
         jogadores[i].pague += extra;
+        jogadores[i].item = nomeItem;
         salvar();
         atualizarUI();
       }
@@ -106,8 +136,8 @@ function atualizarUI() {
       atualizarUI();
     };
   });
-  const valorEntradaEl = document.getElementById("valorEntrada");
-  valorEntradaEl.textContent = (somaPague * 2).toFixed(2);
+
+  document.getElementById("valorEntrada").textContent = valorEntrada;
 }
 
 formRaros.addEventListener("submit", (e) => {
