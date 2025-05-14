@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dança das Cadeiras - Habbo</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <section class="main-panel">
+        <h1>Dança das Cadeiras</h1>
+        <form id="formPague">
+          <input type="text" id="nick" placeholder="Nick do jogador" required />
+          <input
+            type="number"
+            id="valor"
+            placeholder="Valor pago (c)"
+            required
+          />
+          <button type="submit">Adicionar/Atualizar</button>
+        </form>
+
+        <table id="tabelaJogadores">
+          <thead>
+            <tr>
+              <th>Nick</th>
+              <th>Pague</th>
+              <th>10%</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div class="resumo">
+          <p>Total de Pague: <span id="totalPague">0.00</span>c</p>
+          <p>Taxa (10%): <span id="totalTaxa">0.00</span>c</p>
+          <p>Total Geral: <span id="totalGeral">0.00</span>c</p>
+          <p>Share do Operador (30%): <span id="shareOperador">0.00</span>c</p>
+          <p>Pool Líquido: <span id="poolLiquido">0.00</span>c</p>
+          <p>
+            <strong>Valor de Entrada:</strong>
+            <span id="valorEntrada">0.00</span>c
+          </p>
+        </div>
+        <div class="botoes-final">
+          <button id="btnDownload">Download PDF</button>
+          <button id="btnLimpar">Limpar Tudo</button>
+        </div>
+      </section>
+
+      <section class="rares-panel">
+        <h2>Raros Investidos no Vingar</h2>
+        <form id="formRaros">
+          <select id="nickRaro" required></select>
+          <input
+            type="text"
+            id="nomeRaro"
+            placeholder="Nome do raro"
+            required
+          />
+          <button type="submit">Adicionar Raro</button>
+        </form>
+
+        <table id="tabelaRaros">
+          <thead>
+            <tr>
+              <th>Nick</th>
+              <th>Raro</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+
+    <footer>Criado por Kassia Albuquerque ✨</footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
