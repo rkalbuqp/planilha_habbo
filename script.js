@@ -53,6 +53,13 @@ document.addEventListener("DOMContentLoaded", () => {
     operadorInput.addEventListener("blur", salvarOperador);
   }
 
+  // Evento para download (impressão)
+  if (btnDownload) {
+    btnDownload.addEventListener("click", () => {
+      window.print();
+    });
+  }
+
   tipoPagamento.addEventListener("change", () => {
     nomeItem.style.display =
       tipoPagamento.value === "mobi" ? "inline-block" : "none";
