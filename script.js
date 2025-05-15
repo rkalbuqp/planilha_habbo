@@ -2,36 +2,35 @@ document.addEventListener("DOMContentLoaded", () => {
   const formPague = document.getElementById("formPague");
   const tipoPagamento = document.getElementById("tipoPagamento");
   const nomeItem = document.getElementById("nomeItem");
-  const nomeRaro = document.getElementById("nomeRaro"); // Novo campo para item raro
+  const nomeRaro = document.getElementById("nomeRaro");
   const tabelaJogadores = document
     .getElementById("tabelaJogadores")
     .querySelector("tbody");
 
-  const totalPagueEl = document.getElementById("totalPague");
-  const totalTaxaEl = document.getElementById("totalTaxa");
-  const totalGeralEl = document.getElementById("totalGeral");
-  const shareOperadorEl = document.getElementById("shareOperador");
-  const poolLiquidoEl = document.getElementById("poolLiquido");
-  const valorEntradaEl = document.getElementById("valorEntrada");
+  const formRaros = document.getElementById("formRaros");
+  const tabelaRaros = document
+    .getElementById("tabelaRaros")
+    .querySelector("tbody");
 
   const btnLimpar = document.getElementById("btnLimpar");
 
   let jogadores = [];
+  let raros = [];
 
+  // Carrega dados do localStorage
   function carregar() {
     const j = localStorage.getItem("jogadores");
     const r = localStorage.getItem("raros");
-    if (j) jogadores = JSON.parse(j);
-    if (r) raros = JSON.parse(r);
-    atualizarUI();
+    jogadores = j ? JSON.parse(j) : [];
+    raros = r ? JSON.parse(r) : [];
+    atualizarTabela();
     atualizarRaros();
-    atualizarSelectNicks();
   }
 
+  // Salva dados no localStorage
   function salvar() {
     localStorage.setItem("jogadores", JSON.stringify(jogadores));
   }
-
   function salvarRaros() {
     localStorage.setItem("raros", JSON.stringify(raros));
   }
@@ -40,16 +39,17 @@ document.addEventListener("DOMContentLoaded", () => {
     nomeItem.style.display =
       tipoPagamento.value === "mobi" ? "inline-block" : "none";
     nomeRaro.style.display =
-      tipoPagamento.value === "moeda" ? "inline-block" : "none"; // Exibe campo raro para "moeda"
+      tipoPagamento.value === "moeda" ? "inline-block" : "none";
   });
 
+  // Adiciona/Atualiza pagamento
   formPague.addEventListener("submit", (e) => {
     e.preventDefault();
     const nick = document.getElementById("nick").value.trim();
-    const valor = parseInt(document.getElementById("valor").value);
+    const valor = parseInt(document.getElementById("valor").value, 10);
     const tipo = tipoPagamento.value;
     const item = tipo === "mobi" ? nomeItem.value.trim() : "moeda";
-    const itemRaro = tipo === "moeda" ? nomeRaro.value.trim() : ""; // Verifica se é um item raro
+    const itemRaro = tipo === "moeda" ? nomeRaro.value.trim() : "";
 
     if (!nick || isNaN(valor) || valor <= 0) {
       alert("Preencha os campos corretamente.");
@@ -57,7 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const novoPagamento = { item, valor, itemRaro };
-
     const jogador = jogadores.find(
       (j) => j.nick.toLowerCase() === nick.toLowerCase()
     );
@@ -67,99 +66,114 @@ document.addEventListener("DOMContentLoaded", () => {
       jogadores.push({ nick, pagamentos: [novoPagamento], status: "Jogando" });
     }
 
+    salvar();
     atualizarTabela();
     formPague.reset();
-    nomeItem.style.display = "none";
-    nomeRaro.style.display = "none"; // Esconde campo raro após submissão
+    nomeItem.style.display = nomeRaro.style.display = "none";
   });
 
+  // Adiciona raro
+  formRaros.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const nickRaro = document.getElementById("nickRaro").value.trim();
+    const nomeRaroVal = document.getElementById("nomeRaro").value.trim();
+
+    if (!nickRaro || !nomeRaroVal) {
+      alert("Preencha os dois campos corretamente.");
+      return;
+    }
+
+    raros.push({ nick: nickRaro, raro: nomeRaroVal });
+    salvarRaros();
+    atualizarRaros();
+    formRaros.reset();
+  });
+
+  // Limpa tudo
   btnLimpar.addEventListener("click", () => {
     if (confirm("Deseja limpar todos os dados?")) {
       jogadores = [];
+      raros = [];
+      localStorage.removeItem("jogadores");
+      localStorage.removeItem("raros");
       atualizarTabela();
+      atualizarRaros();
     }
   });
 
+  // Remove jogador
   window.removerJogador = (nick) => {
     jogadores = jogadores.filter(
       (j) => j.nick.toLowerCase() !== nick.toLowerCase()
     );
+    salvar();
     atualizarTabela();
   };
 
+  // Editar jogador (adiciona novo pagamento)
   window.editarJogador = (nick) => {
     const jogador = jogadores.find(
       (j) => j.nick.toLowerCase() === nick.toLowerCase()
     );
     if (!jogador) return;
-
     const tipo = prompt('O pagamento é "moeda" ou "mobi"?').toLowerCase();
-
     if (tipo !== "moeda" && tipo !== "mobi") {
       alert('Tipo inválido. Use "moeda" ou "mobi".');
       return;
     }
-
-    let novoItem = "moeda";
-    let novoItemRaro = "";
+    let item = "moeda",
+      itemRaro = "";
     if (tipo === "mobi") {
-      novoItem = prompt("Nome do item mobi:").trim();
-      if (!novoItem) {
+      item = prompt("Nome do item mobi:").trim();
+      if (!item) {
         alert("Item inválido.");
         return;
       }
-    } else if (tipo === "moeda") {
-      novoItemRaro = prompt("Digite o nome do item raro (se houver):").trim();
+    } else {
+      itemRaro = prompt("Digite o nome do item raro (se houver):").trim();
     }
-
-    const novoValor = parseInt(prompt("Novo valor (somente número inteiro):"));
-    if (isNaN(novoValor) || novoValor <= 0) {
+    const valor = parseInt(prompt("Novo valor (somente número inteiro):"), 10);
+    if (isNaN(valor) || valor <= 0) {
       alert("Valor inválido.");
       return;
     }
-
-    jogador.pagamentos.push({
-      item: novoItem,
-      valor: novoValor,
-      itemRaro: novoItemRaro,
-    });
+    jogador.pagamentos.push({ item, valor, itemRaro });
+    salvar();
     atualizarTabela();
   };
 
+  // Altera status
   window.alterarStatus = (nick) => {
     const jogador = jogadores.find(
       (j) => j.nick.toLowerCase() === nick.toLowerCase()
     );
     if (!jogador) return;
-
     jogador.status = jogador.status === "Jogando" ? "Eliminado" : "Jogando";
+    salvar();
     atualizarTabela();
   };
 
+  // Atualiza tabela de jogadores
   function atualizarTabela() {
     tabelaJogadores.innerHTML = "";
-
-    let totalPague = 0;
-    let totalTaxa = 0;
-    let totalGeral = 0;
-
+    let totalPague = 0,
+      totalTaxa = 10,
+      totalGeral = 0;
     jogadores.forEach((jogador) => {
-      const tr = document.createElement("tr");
-
       const itens = jogador.pagamentos.map((p) => p.item).join(", ");
-      const valores = jogador.pagamentos.map((p) => `${p.valor}c`).join(", ");
       const itensRaros = jogador.pagamentos
         .filter((p) => p.itemRaro)
         .map((p) => p.itemRaro)
         .join(", ");
-
+      const valores = jogador.pagamentos.map((p) => `${p.valor}c`).join(", ");
       const valorTotal = jogador.pagamentos.reduce((s, p) => s + p.valor, 0);
       const taxa = Math.floor(valorTotal * 0.1);
       const total = valorTotal + taxa;
 
+      const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${jogador.nick}</td>
-        <td>${itens} ${itensRaros ? ` (Raros: ${itensRaros})` : ""}</td>
+        <td>${itens}${itensRaros ? ` (Raros: ${itensRaros})` : ""}</td>
         <td>${valores}</td>
         <td>${valorTotal}c</td>
         <td>${taxa}c</td>
@@ -171,56 +185,28 @@ document.addEventListener("DOMContentLoaded", () => {
             jogador.nick
           }')">Alterar Status</button>
           <button onclick="removerJogador('${jogador.nick}')">Remover</button>
-        </td>
-      `;
-
+        </td>`;
       tabelaJogadores.appendChild(tr);
-
       totalPague += valorTotal;
       totalTaxa += taxa;
       totalGeral += total;
     });
-
-    const shareOperador = Math.floor(totalGeral * 0.3);
-    const poolLiquido = totalGeral - shareOperador;
+    document.getElementById("totalPague").textContent = totalPague;
+    document.getElementById("totalTaxa").textContent = totalTaxa;
+    document.getElementById("totalGeral").textContent = totalGeral;
     const valorEntrada = Math.floor(totalTaxa * 2);
-
-    totalPagueEl.textContent = totalPague;
-    totalTaxaEl.textContent = totalTaxa;
-    totalGeralEl.textContent = totalGeral;
-    shareOperadorEl.textContent = shareOperador;
-    poolLiquidoEl.textContent = poolLiquido;
-    valorEntradaEl.textContent = valorEntrada;
+    document.getElementById("valorEntrada").textContent = valorEntrada;
   }
 
-  const formRaros = document.getElementById("formRaros");
-  const tabelaRaros = document
-    .getElementById("tabelaRaros")
-    .querySelector("tbody");
+  // Atualiza tabela de raros
+  function atualizarRaros() {
+    tabelaRaros.innerHTML = "";
+    raros.forEach((r) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${r.nick}</td><td>${r.raro}</td>`;
+      tabelaRaros.appendChild(tr);
+    });
+  }
 
-  formRaros.addEventListener("submit", (e) => {
-    e.preventDefault(); // Evita o recarregamento da página
-
-    const nickRaro = document.getElementById("nickRaro").value.trim();
-    const nomeRaro = document.getElementById("nomeRaro").value.trim();
-
-    if (!nickRaro || !nomeRaro) {
-      alert("Preencha os dois campos corretamente.");
-      return;
-    }
-
-    // Cria nova linha na tabela
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${nickRaro}</td>
-      <td>${nomeRaro}</td>
-    `;
-    tabelaRaros.appendChild(tr);
-
-    formRaros.reset(); // Limpa os campos após adicionar
-  });
-
-  btnDownload.addEventListener("click", () => window.print());
+  carregar();
 });
-
-carregar();
