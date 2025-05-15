@@ -1,4 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // Input para o operador
+  const operadorInput = document.getElementById("operador");
+
   const formPague = document.getElementById("formPague");
   const tipoPagamento = document.getElementById("tipoPagamento");
   const nomeItem = document.getElementById("nomeItem");
@@ -16,13 +19,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let jogadores = [];
   let raros = [];
+  let operador = "";
 
   // Carrega dados do localStorage
   function carregar() {
     const j = localStorage.getItem("jogadores");
     const r = localStorage.getItem("raros");
+    const op = localStorage.getItem("operador");
+
     jogadores = j ? JSON.parse(j) : [];
     raros = r ? JSON.parse(r) : [];
+    operador = op || "";
+
+    if (operadorInput) operadorInput.value = operador;
     atualizarTabela();
     atualizarRaros();
   }
@@ -33,6 +42,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function salvarRaros() {
     localStorage.setItem("raros", JSON.stringify(raros));
+  }
+  function salvarOperador() {
+    operador = operadorInput.value.trim();
+    localStorage.setItem("operador", operador);
+  }
+
+  // Evento para salvar operador ao perder o foco
+  if (operadorInput) {
+    operadorInput.addEventListener("blur", salvarOperador);
   }
 
   tipoPagamento.addEventListener("change", () => {
@@ -94,8 +112,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (confirm("Deseja limpar todos os dados?")) {
       jogadores = [];
       raros = [];
+      operador = "";
       localStorage.removeItem("jogadores");
       localStorage.removeItem("raros");
+      localStorage.removeItem("operador");
+      if (operadorInput) operadorInput.value = "";
       atualizarTabela();
       atualizarRaros();
     }
