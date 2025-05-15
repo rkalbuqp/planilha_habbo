@@ -100,6 +100,23 @@ td {
   margin: 0.3rem 0;
 }
 
+.operador-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  width: 90px;
+}
+.operador-container label {
+  margin-right: 0.5rem;
+  font-weight: bold;
+}
+.operador-container input {
+  flex: 1;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: none;
+}
+
 footer {
   background-color: rgba(0, 0, 0, 0.7);
   color: white;
